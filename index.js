@@ -2,9 +2,11 @@ let express = require('express')
 let bodyParser = require('body-parser')
 let path = require('path')
 let cat = require('./router/cat')
-let querystring = require('querystring')
+let mongoose = require('mongoose')
+    // Use native promises
+mongoose.Promise = global.Promise
 let port = 1234
-
+let connectionString = 'mongodb: localhost:27107/MyCatOwnerDb'
 let app = express()
 app.use(bodyParser.urlencoded({ extended: true }))
 
@@ -16,26 +18,18 @@ app.set('view engine', 'pug')
 app.use(express.static('public'))
 
 app.get('/', (req, res, next) => {
-  res.send('something for default')
+  res.render('home', {
+    title: 'Cat list on our site'
+  })
   next()
 })
-app.get('/cat/:item', (req, res, next) => {
-  if (req.params.item === 'catlist') {
-    res.render('catlist', {
-      title: 'Cat List'
-    })
-  } else if (req.params.item === 'addCat') {
-    
-    res.render('catform', {
-        titel: 'Add new Cat to the List'
-    })
-  }
-  console.log(req.params)
-  next()
-})
-app.post('/addCat', (req, res) => {
-    cat.logger()
-})
+mongoose
+  .connect(connectionString)
+  .then(() => {
+    app.use(require('./router/cat'))
+    app.use(require('./router/owner'))
+  })
+
 app.get('/config*', (req, res, next) => {
   let err = new Error('Not found')
   err.status = 404
