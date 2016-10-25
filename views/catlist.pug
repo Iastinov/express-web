@@ -7,10 +7,10 @@ html
                         th Name
                         th NickName
                         th Details
-                    each i in new Array(5)    
+                    for result in catObj   
                         tr
-                            td name
-                            td awsomename
+                            td result.name
+                            td result.nickname
                             td 
                                a(href='details') Details
         a(href='/cat/addCat') Add Cats

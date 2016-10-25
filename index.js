@@ -3,16 +3,21 @@ let bodyParser = require('body-parser')
 let path = require('path')
 let cat = require('./router/cat')
 let mongoose = require('mongoose')
+
     // Use native promises
 mongoose.Promise = global.Promise
 let port = 1234
-let connectionString = 'mongodb: localhost:27107/MyCatOwnerDb'
+let connection = 'mongodb://localhost:27017/MyCatOwnerDB'
+
 let app = express()
 app.use(bodyParser.urlencoded({ extended: true }))
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'pug')
+app.set('view options', {
+  layout: false
+})
 
 // static/public files
 app.use(express.static('public'))
@@ -24,11 +29,14 @@ app.get('/', (req, res, next) => {
   next()
 })
 mongoose
-  .connect(connectionString)
+  .connect(connection)
   .then(() => {
+    console.log('Mongodb is up and running!')
     app.use(require('./router/cat'))
     app.use(require('./router/owner'))
   })
+  .catch(console.log)
+
 
 app.get('/config*', (req, res, next) => {
   let err = new Error('Not found')
